@@ -8,6 +8,10 @@ void print(char c, FILE *out) {
 	fwrite(&c, sizeof(char), 1, out);
 }
 
+void print(unsigned char c, FILE *out) {
+	fwrite(&c, sizeof(char), 1, out);
+}
+
 void print(bool b, FILE *out) {
 	print(char(b), out);
 }
@@ -20,6 +24,17 @@ void print(string s, FILE *out) {
 	print(int(s.length()), out);
 	for (int i = 0; i < (int) s.size(); ++i)
 		print(char(s[i]), out);
+}
+
+void print(vector <bool> v, FILE *out) {
+	print(int(v.size()), out);
+	unsigned char c;
+	for (int i = 0; i < (int) v.size(); i += 8) {
+		c = 0;
+		for (int j = 0; j < 8 && i + j < (int) v.size(); ++j)
+			c |= (v[i + j] << (7 - j));
+		print(c, out);
+	}
 }
 
 template <typename T>
@@ -76,16 +91,14 @@ void read(char &c, FILE *in) {
 	fread(&c, sizeof(char), 1, in);
 }
 
+void read(unsigned char &c, FILE *in) {
+	fread(&c, sizeof(unsigned char), 1, in);
+}
+
 void read(bool &b, FILE *in) {
 	char c;
 	read(c, in);
 	b = bool(c);
-}
-
-bool read_bool(FILE *in) {
-	char c;
-	read(c, in);
-	return bool(c);
 }
 
 void read(int &x, FILE *in) {
@@ -113,8 +126,12 @@ void read(vector <bool> &v, FILE *in) {
 	int len;
 	read(len, in);
 	v.resize(len);
-	for (int i = 0; i < len; ++i)
-		v[i] = read_bool(in);
+	for (int i = 0; i < len; i += 8) {
+		unsigned char c;
+		read(c, in);
+		for (int j = 0; j < 8 && i + j < len; ++j)
+			v[i + j] = (c & (1 << (7 - j)));
+	}
 }
 
 void read(Point &p, FILE *in) {

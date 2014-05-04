@@ -19,7 +19,7 @@
 #define BULLET_CHEAT rand() // Happy debugging!
 #define BOMB_CHEAT 5682346
 
-const int MAX_SIZE = 20;
+const int MAX_SIZE = 1000;
 bool DEBUG = false;
 
 using namespace std;
