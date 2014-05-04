@@ -79,16 +79,20 @@ Labyrinth generate_labyrinth(Parameters params) {
 	map.bombs_in_game = params.bombs * params.players;
 	map.bullets_in_game = params.bullets * params.players;
 	map.cell.resize(map.size, vector <Cell>(map.size, Cell()));
-	if (DEBUG)
+	if (DEBUG) {
 		cerr << "Generating walls ";
+		cerr.flush();
+	}
 	for (int dir = 0; dir < 4; ++dir)
 		map.wall[dir].resize(map.size, vector <bool>(map.size, true));
 	generate_walls(map);
 	if (DEBUG)
 		cerr << "[ok]" << endl;
 	
-	if (DEBUG)
+	if (DEBUG) {
 		cerr << "Generating objects ";
+		cerr.flush();
+	}
 	vector <Point> empty;
 	for (int x = 0; x < map.size; ++x)
 		for (int y = 0; y < map.size; ++y)

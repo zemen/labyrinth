@@ -4,6 +4,9 @@
  *
  * Changelog:
  * 
+ * v11
+ * - Ability to save game to file and load from file
+ * 
  * v10
  * - Absolutely new structured code!
  * - Kruskal algorithm used in generating labyrinth
@@ -71,11 +74,36 @@
 //~ #include "save.cpp"
 
 int main(int argc, char **argv) {
-	for (int i = 0; i < argc; ++i)
+	Parameters params;
+	Labyrinth map;
+	init();
+	bool loaded = false;
+	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "DEBUG") == 0)
 			DEBUG = true;
-	init();
-	Parameters params = get_information();
-	Labyrinth map = generate_labyrinth(params);
+		else if (strlen(argv[i]) >= 4 && strcmp(argv[i] + strlen(argv[i]) - 4, ".lab") == 0) {
+			cout << "Loading labyrinth from file " << argv[i] << " ";
+			cout.flush();
+			FILE *in = fopen(argv[i], "rb");
+			if (read(map, in)) {
+				cout << "[ok]" << endl;
+				cout << "Checking labyrinth" << endl;
+				check_labyrinth(map);
+				cout << "Done!" << endl;
+				loaded = true;
+			} else {
+				cout << "[fail]" << endl;
+				map = Labyrinth();
+			}
+			fclose(in);
+		} else {
+			cout << "Unknown argument: " << argv[i] << endl;
+			return 0;
+		}
+	}
+	if (!loaded) {
+		params = get_information();
+		map = generate_labyrinth(params);
+	}
 	play(map);
 }

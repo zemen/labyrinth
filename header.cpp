@@ -8,6 +8,7 @@
 #include <set>
 #include <memory.h>
 #include <cassert>
+#include <cstdio>
 
 #define EMPTY 9479
 #define MORTUARY 652315
@@ -27,8 +28,7 @@ struct Point {
 	int x, y;
 	
 	Point() {
-		x = rand();
-		y = rand();
+		x = y = 0;
 	}
 	
 	Point(int _x, int _y) {
@@ -55,11 +55,11 @@ Point delta[4] = {Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)};
 vector <string> idiot_string;
 
 struct Player {
-	int bullets, bombs, treasures;
-	int fails, good_turns, deaths;
-	bool in_game;
 	int id;
 	string name;
+	bool in_game;
+	int bullets, bombs, treasures;
+	int fails, good_turns, deaths;
 	Point pos;
 
 	Player() {
@@ -97,6 +97,16 @@ struct Labyrinth {
 	vector <Player> player;
 	vector <vector <bool> > wall[4];
 	Point mortuary;
+	
+	Labyrinth() {
+		size = current_player = players_in_game = bombs_in_game = bullets_in_game = 0;
+		cell.clear();
+		portal.clear();
+		player.clear();
+		for (int i = 0; i < 4; ++i)
+			wall[i].clear();
+		mortuary = Point();
+	}
 };
 
 struct Parameters {

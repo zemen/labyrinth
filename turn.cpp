@@ -3,6 +3,7 @@
 #define TURN_INCLUDED
 
 #include "game.cpp"
+#include "save.cpp"
 
 void finish_game(Labyrinth &map);
 void erase_player_from_cell(Labyrinth &map, Player &p);
@@ -166,6 +167,22 @@ bool use_knife(Labyrinth &map, Player &p) {
 bool stay(Player &p) {
 	p.fails++;
 	cout << "Okay" << endl;
+	return true;
+}
+
+bool save_game(Labyrinth &map) {
+	cout << "Enter file name" << endl;
+	string name;
+	cin >> name;
+	name += ".lab";
+	FILE *out = fopen(name.c_str(), "wb");
+	if (!out) {
+		cout << "Failed to save game to file " << name << endl;
+		return false;
+	}
+	print(map, out);
+	fclose(out);
+	cout << "Game successfully saved to file " << name << endl;
 	return true;
 }
 

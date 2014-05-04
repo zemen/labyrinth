@@ -172,6 +172,7 @@ bool bomb(Labyrinth &, Player &);
 bool go(Labyrinth &, Player &);
 bool shoot(Labyrinth &, Player &);
 bool stay(Player &);
+bool save_game(Labyrinth &);
 
 bool turn(Labyrinth &map) {
 	take_objects_from_cell(map, map.player[map.current_player]);
@@ -180,7 +181,7 @@ bool turn(Labyrinth &map) {
 		print_debug(map);
 	cout << endl;
 	cout << "Player " << map.player[map.current_player].name << ", your turn" << endl;
-	cout << "Enter what you want (go, bomb, shoot, knife, suicide, stay, leave)" << endl;
+	cout << "Enter what you want (go, bomb, shoot, knife, suicide, stay, leave, save)" << endl;
 	string s;
 	cin >> s;
 	
@@ -198,6 +199,10 @@ bool turn(Labyrinth &map) {
 		return shoot(map, map.player[map.current_player]);
 	if (s == "stay")
 		return stay(map.player[map.current_player]);
+	if (s == "save") {
+		save_game(map);
+		return false;
+	}
 	if (s == "winthemall") {
 		if (is_developer(map.player[map.current_player])) {
 			cout << "Okay, master" << endl;

@@ -120,8 +120,11 @@ void check_labyrinth(Labyrinth &map) {
 	assert(players == map.players_in_game);
 	assert(bombs == map.bombs_in_game);
 	assert(bullets == map.bullets_in_game);
-	for (int i = 0; i < (int) map.portal.size(); ++i)
+	assert(treasures <= 1);
+	for (int i = 0; i < (int) map.portal.size(); ++i) {
 		check_point(map.portal[i], map.size);
+		assert(map.cell[map.portal[i].x][map.portal[i].y].portal_id == i);
+	}
 	for (int x = 0; x < map.size; ++x)
 		for (int y = 0; y < map.size - 1; ++y)
 			assert(map.wall[RIGHT][x][y] == map.wall[LEFT][x][y + 1]);
