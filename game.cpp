@@ -238,6 +238,8 @@ void play(Labyrinth &map) {
 			while (!turn(map));
 			god_turn(map);
 		}
+		if (DEBUG)
+			check_labyrinth(map);
 		++map.current_player;
 		if (map.current_player == int(map.player.size()))
 			map.current_player = 0;

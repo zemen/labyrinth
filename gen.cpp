@@ -3,6 +3,7 @@
 #define GEN_INCLUDED
 
 #include "header.cpp"
+#include "debug.cpp"
 
 //~ DSU for Kruskal
 struct DSU {
@@ -137,6 +138,8 @@ Labyrinth generate_labyrinth(Parameters params) {
 				edges += (map.wall[dir][x][y] == 0);
 	if (DEBUG)
 		cerr << "[ok]" << endl;
+	if (DEBUG)
+		check_labyrinth(map);
 	return map;
 }
 

@@ -86,4 +86,60 @@ void print_debug(Labyrinth &map) {
 	print_labyrinth(map, cerr);
 }
 
+void check_point(Point p, int n) {
+	assert(p.x >= 0 && p.x < n && p.y >= 0 && p.y < n);
+}
+
+void check_labyrinth(Labyrinth &map) {
+	assert((int) map.cell.size() == map.size);
+	for (int i = 0; i < map.size; ++i)
+		assert((int) map.cell[i].size() == map.size);
+	assert(map.current_player >= 0 && map.current_player < (int) map.player.size());
+	int players = 0;
+	int bombs = 0, bullets = 0, treasures = 0;
+	check_point(map.mortuary, map.size);
+	assert(map.cell[map.mortuary.x][map.mortuary.y].type == MORTUARY);
+	set <string> names;
+	for (int i = 0; i < (int) map.player.size(); ++i) {
+		players += map.player[i].in_game;
+		if (!map.player[i].in_game) {
+			assert(map.player[i].bombs == 0);
+			assert(map.player[i].bullets == 0);
+			assert(map.player[i].treasures == 0);
+		} else {
+			bombs += map.player[i].bombs;
+			bullets += map.player[i].bullets;
+			treasures += map.player[i].treasures;
+		}
+		assert(map.player[i].id == i);
+		assert(map.player[i].name.size() > 0 && map.player[i].name.size() <= 100);
+		names.insert(map.player[i].name);
+		check_point(map.player[i].pos, map.size);
+	}
+	assert((int) names.size() == (int) map.player.size());
+	assert(players == map.players_in_game);
+	assert(bombs == map.bombs_in_game);
+	assert(bullets == map.bullets_in_game);
+	for (int i = 0; i < (int) map.portal.size(); ++i)
+		check_point(map.portal[i], map.size);
+	for (int x = 0; x < map.size; ++x)
+		for (int y = 0; y < map.size - 1; ++y)
+			assert(map.wall[RIGHT][x][y] == map.wall[LEFT][x][y + 1]);
+	for (int x = 0; x < map.size - 1; ++x)
+		for (int y = 0; y < map.size; ++y)
+			assert(map.wall[DOWN][x][y] == map.wall[UP][x + 1][y]);
+	players = 0;
+	for (int x = 0; x < map.size; ++x)
+		for (int y = 0; y < map.size; ++y) {
+			if (map.cell[x][y].type == MINOTAUR)
+				assert(map.cell[x][y].player.empty());
+			players += (int) map.cell[x][y].player.size();
+			for (int i = 0; i < (int) map.cell[x][y].player.size(); ++i) {
+				int p = map.cell[x][y].player[i];
+				assert(map.player[p].pos == Point(x, y));
+			}
+		}
+	assert(players == map.players_in_game);
+}
+
 #endif
