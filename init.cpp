@@ -19,6 +19,12 @@ void set_standard_labyrinth(Parameters &params) {
 	params.bombs = 2;
 }
 
+void set_labyrinth_for_server(Parameters &params) {
+	set_standard_labyrinth(params);
+	params.player_names.clear();
+	params.players = 0;
+}
+
 void get_players(Parameters &params, int max_number) {
 	cout << "Enter number of players (from 1 to " << max_number << ")" << endl;
 	cin >> params.players;
@@ -94,17 +100,17 @@ Parameters get_information() {
 void init() {
 	srand(time(0));
 	
-	idiot_string.push_back("You're an idiot!");
-	idiot_string.push_back("Are you an idiot?");
-	idiot_string.push_back("Have you got a brain?");
-	idiot_string.push_back("Are you crazy?");
-	idiot_string.push_back("Only the wall can help you.");
-	idiot_string.push_back("You should drink a poison.");
-	idiot_string.push_back("You're a bit stupid.");
-	idiot_string.push_back("Do you speak English?");
+	idiot_string.push_back("you're an idiot!");
+	idiot_string.push_back("are you an idiot?");
+	idiot_string.push_back("have you got a brain?");
+	idiot_string.push_back("are you crazy?");
+	idiot_string.push_back("only the wall can help you.");
+	idiot_string.push_back("you should drink a poison.");
+	idiot_string.push_back("you're a bit stupid.");
+	idiot_string.push_back("do you speak English?");
 	idiot_string.push_back("WTF?");
-	idiot_string.push_back("It's better to kill yourself, idiot!");
-	idiot_string.push_back("This game is too hard for you.");
+	idiot_string.push_back("it's better to kill yourself, idiot!");
+	idiot_string.push_back("this game is too hard for you.");
 	
 	if (DEBUG)
 		cout << "Debug mod on" << endl;

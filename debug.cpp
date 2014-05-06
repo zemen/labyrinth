@@ -94,7 +94,9 @@ void check_labyrinth(Labyrinth &map) {
 	assert((int) map.cell.size() == map.size);
 	for (int i = 0; i < map.size; ++i)
 		assert((int) map.cell[i].size() == map.size);
-	assert(map.current_player >= 0 && map.current_player < (int) map.player.size());
+	assert(map.current_player >= 0);
+	if (!SERVER)
+		assert(map.current_player < (int) map.player.size());
 	int players = 0;
 	int bombs = 0, bullets = 0, treasures = 0;
 	check_point(map.mortuary, map.size);

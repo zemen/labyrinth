@@ -1,8 +1,12 @@
-/* Labyrinth Game v10
+/* Labyrinth Game
  *
  * by pershik & matushkin & zemen
  *
  * Changelog:
+ * 
+ * v12
+ * - Server/client mode
+ * - Now player can't pass direction for command in the line, that contains command(will be fixed)
  * 
  * v11
  * - Ability to save game to file and load from file
@@ -44,7 +48,7 @@
  * - Modified create_labyrinth method
  *
  * v4
- * - Added a second exit in labyrinth
+ * - Added second exit in labyrinth
  * - Added new turn commands(stay)
  * - Modified input method
  * - Fixed segmentation fault bug
@@ -66,12 +70,13 @@
  */
 
 #include "header.cpp"
+#include "server.cpp"
 #include "gen.cpp"
 #include "init.cpp"
 #include "turn.cpp"
 #include "game.cpp"
 #include "debug.cpp"
-//~ #include "save.cpp"
+#include "save.cpp"
 
 int main(int argc, char **argv) {
 	Parameters params;
@@ -79,8 +84,10 @@ int main(int argc, char **argv) {
 	init();
 	bool loaded = false;
 	for (int i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "DEBUG") == 0)
+		if (strcmp(argv[i], "--debug") == 0)
 			DEBUG = true;
+		else if (strcmp(argv[i], "--server") == 0)
+			SERVER = true;
 		else if (strlen(argv[i]) >= 4 && strcmp(argv[i] + strlen(argv[i]) - 4, ".lab") == 0) {
 			cout << "Loading labyrinth from file " << argv[i] << " ";
 			cout.flush();
@@ -101,9 +108,18 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 	}
-	if (!loaded) {
+	if (loaded)
+		play(map);
+	else if (!SERVER) {
 		params = get_information();
 		map = generate_labyrinth(params);
+		play(map);
+	} else {
+		set_labyrinth_for_server(params);
+		map = generate_labyrinth(params);
+		server.init_server();
+		server.clear_messages();
+		thread t(accept_new_users, &server, &map, &params);
+		play(map);
 	}
-	play(map);
 }

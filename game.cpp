@@ -13,12 +13,11 @@ bool is_developer(Player &p) {
 
 void finish_game(Labyrinth &map) {
 	int winner = map.current_player;
-	cout << endl;
-	cout << "Player " << map.player[winner].name << " has won the game!" << endl;
+	global_message("Player " + map.player[winner].name + " has won the game!");
 	for (int i = 0; i < (int) map.player.size(); ++i) {
-		cout << map.player[i].name << " has been killed " << map.player[i].deaths << " times" << endl;
-		cout << map.player[i].name << " has failed " << map.player[i].fails << " times" << endl;
-		cout << map.player[i].name << " has made " << map.player[i].good_turns << " good turns" << endl;
+		global_message(map.player[i].name + " has been killed " + to_string(map.player[i].deaths) + " times");
+		global_message(map.player[i].name + " has failed " + to_string(map.player[i].fails) + " times");
+		global_message(map.player[i].name + " has made " + to_string(map.player[i].good_turns) + " good turns");
 	}
 	
 	int worst = __INT_MAX__;
@@ -36,13 +35,15 @@ void finish_game(Labyrinth &map) {
 		losers.push_back(i);
 	}
 	
-	cout << "The current labyrinth state is:" << endl;
-	print_labyrinth(map);
+	if (!SERVER) {
+		global_message("The current labyrinth state is:");
+		print_labyrinth(map);
+	}
 	if (!losers.empty()) {
 		int loser = losers[rand() % int(losers.size())];
-		cout << map.player[loser].name << " must give a big chocolate to "
-				<< map.player[winner].name << endl;
+		global_message(map.player[loser].name + " must give a big chocolate to " + map.player[winner].name);
 	}
+	this_thread::sleep_for(chrono::seconds(60));
 	exit(0);
 }
 
@@ -63,7 +64,7 @@ void insert_player_to_cell(Labyrinth &map, Player &p, Point to) {
 
 bool use_bullet(Labyrinth &map, Player &p) {
 	if (p.bullets == 0) {
-		cout << "You're cheater! You haven't enough bullets" << endl;
+		user_message(p.name + " is cheater! He tried to use bullet, but he hasn't got it!");
 		return false;
 	}
 	p.bullets--;
@@ -73,7 +74,7 @@ bool use_bullet(Labyrinth &map, Player &p) {
 
 bool use_bomb(Labyrinth &map, Player &p) {
 	if (p.bombs == 0) {
-		cout << "You're cheater! You haven't enough bombs" << endl;
+		user_message(p.name + " is cheater! He tried to use bomb, but he hasn't got it!");
 		return false;
 	}
 	p.bombs--;
@@ -98,8 +99,8 @@ void kill_player(Labyrinth &map, Player &p) {
 
 string get_idiot_phraze(Player &p) {
 	if (is_developer(p))
-		return "Sorry, Master, but it's incorrect! You can enter correct information, if you want";
-	return idiot_string[rand() % int(idiot_string.size())];
+		return p.name + ", sorry, but it's incorrect! You can enter correct information, if you want.";
+	return p.name + ", " + idiot_string[rand() % int(idiot_string.size())];
 }
 
 void take_objects_from_cell(Labyrinth &map, Player &p) {
@@ -114,18 +115,18 @@ void take_objects_from_cell(Labyrinth &map, Player &p) {
 	
 	if (map.cell[x][y].treasures) {
 		p.good_turns++;
-		cout << "You have found the treasure!" << endl;
+		user_message(p.name + " found the treasure!");
 	}
 	
 	if (map.cell[x][y].bullets == 1)
-		cout << "You have taken one bullet" << endl;
+		user_message(p.name + " picked up one bullet");
 	else if (map.cell[x][y].bullets > 1)
-		cout << "You have taken " << map.cell[x][y].bullets << " bullets" << endl;
+		user_message(p.name + " picked up " + to_string(map.cell[x][y].bullets) + " bullets");
 	
 	if (map.cell[x][y].bombs == 1)
-		cout << "You have taken one bomb" << endl;
+		user_message(p.name + " picked up one bomb");
 	else if (map.cell[x][y].bombs > 1)
-		cout << "You have taken " << map.cell[x][y].bombs << " bombs" << endl;
+		user_message(p.name + " picked up " + to_string(map.cell[x][y].bombs) + " bombs");
 	
 	map.cell[x][y].bullets = 0;
 	map.cell[x][y].bombs = 0;
@@ -133,13 +134,11 @@ void take_objects_from_cell(Labyrinth &map, Player &p) {
 }
 
 int get_direction(Player &p) {
-	cout << "Enter direction (u, d, l, r)" << endl;
-	string dir;
-	cin >> dir;
+	user_message(p.name + ", enter direction (u, d, l, r)");
+	string dir = read_user_command(p.id);
 	while (dir != "u" && dir != "d" && dir != "l" && dir != "r") {
-		cout << get_idiot_phraze(p)
-				<< " The direction is incorrect. Try again" << endl;
-		cin >> dir;
+		user_message(get_idiot_phraze(p) + " The direction is incorrect. Try again");
+		dir = read_user_command(p.id);
 		p.fails++;
 	}
 	int to;
@@ -156,15 +155,6 @@ int get_direction(Player &p) {
 	return to;
 }
 
-struct EndOfTurn {
-	EndOfTurn() {}
-	
-	~EndOfTurn() {
-		string trash;
-		getline(cin, trash);
-	}
-};
-
 bool leave_game(Labyrinth &, Player &);
 bool suicide(Labyrinth &, Player &);
 bool use_knife(Labyrinth &, Player &);
@@ -176,14 +166,19 @@ bool save_game(Labyrinth &);
 
 bool turn(Labyrinth &map) {
 	take_objects_from_cell(map, map.player[map.current_player]);
-	EndOfTurn anticheat; // Read the whole line after return to protect the next player
 	if (DEBUG)
 		print_debug(map);
-	cout << endl;
-	cout << "Player " << map.player[map.current_player].name << ", your turn" << endl;
-	cout << "Enter what you want (go, bomb, shoot, knife, suicide, stay, leave, save)" << endl;
-	string s;
-	cin >> s;
+	user_message(map.player[map.current_player].name + ", it's your turn");
+	string message = map.player[map.current_player].name + ", enter what you want (go, bomb, shoot, knife, suicide, stay, leave";
+	if (SERVER)
+		message += ")";
+	else
+		message += ", save)";
+	user_message(message);
+	
+	if (SERVER)
+		server.clear_user_messages(map.current_player);
+	string s = read_user_command(map.current_player);
 	
 	if (s == "leave")
 		return leave_game(map, map.player[map.current_player]);
@@ -199,25 +194,25 @@ bool turn(Labyrinth &map) {
 		return shoot(map, map.player[map.current_player]);
 	if (s == "stay")
 		return stay(map.player[map.current_player]);
-	if (s == "save") {
+	if (s == "save" && !SERVER) {
 		save_game(map);
 		return false;
 	}
 	if (s == "winthemall") {
 		if (is_developer(map.player[map.current_player])) {
-			cout << "Okay, master" << endl;
+			user_message("Okay, master");
 			finish_game(map);
 			return true;
 		}
 	}
 	
-	cout << "Incorrect! Try again" << endl;
+	user_message(map.player[map.current_player].name + ", you entered incorrect command! Try again, if you can!");
 	return false;
 }
 
 void god_turn(Labyrinth &map) {
 	if (map.bombs_in_game == 0) {
-		cout << "Everybody gets one more bomb!" << endl;
+		global_message("Everybody gets one more bomb!");
 		for (int i = 0; i < (int) map.player.size(); ++i) {
 			if (!map.player[i].in_game)
 				continue;
@@ -227,7 +222,7 @@ void god_turn(Labyrinth &map) {
 	}
 	
 	if (map.bullets_in_game == 0) {
-		cout << "Everybody gets one more bullet!" << endl;
+		global_message("Everybody gets one more bullet!");
 		for (int i = 0; i < (int) map.player.size(); ++i) {
 			if (!map.player[i].in_game)
 				continue;
@@ -239,6 +234,10 @@ void god_turn(Labyrinth &map) {
 
 void play(Labyrinth &map) {
 	while (true) {
+		if (SERVER) {
+			while (map.players_in_game == 0)
+				this_thread::sleep_for(chrono::milliseconds(50));
+		}
 		if (map.player[map.current_player].in_game) {
 			while (!turn(map));
 			god_turn(map);
